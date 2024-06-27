@@ -1,4 +1,4 @@
-from Game_test import *
+from Game import *
 import torch
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -30,6 +30,10 @@ class Parallelizer:
         aggregated_loss.backward()
         network.opt.step()
 
+    async def close(self):
+        for game in self.games:
+            await game.ws.close_connection()
+
     async def run(self):
         for _ in range(self.epochs):
             p1_actor_losses = []
@@ -57,8 +61,6 @@ class Parallelizer:
             }
             self.losses.append(losses)
         self.store_model()
-        #for game in self.games:
-        #   await game.ws.close_connection()
         return self.losses
 
     def store_model(self):
@@ -68,8 +70,8 @@ class Parallelizer:
         hyperparameters_str = hyperparameters_str.replace('.', '_')
         
         # Save the model state dictionaries with the new filename
-        p1_actor_filename = f'p1_actor_{hyperparameters_str}.pth'
-        p2_actor_filename = f'p2_actor_{hyperparameters_str}.pth'
+        p1_actor_filename = f'./models/p1_actor_{hyperparameters_str}.pth'
+        p2_actor_filename = f'./models/p2_actor_{hyperparameters_str}.pth'
         
         torch.save(self.p1_actor.state_dict(), p1_actor_filename)
         torch.save(self.p2_actor.state_dict(), p2_actor_filename)
