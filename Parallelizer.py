@@ -34,7 +34,7 @@ class Parallelizer:
         for _ in range(self.epochs):
             p1_actor_losses = []
             p2_actor_losses = []
-
+            print(f"Epoch: {_}")
             results = await asyncio.gather(*(game.run_A2C() for game in self.games))
 
             print(f"Results: {results}")

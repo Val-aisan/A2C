@@ -17,8 +17,8 @@ class Supervisor:
             # Define reasonable ranges for hyperparameters
             lam = random.uniform(0.9, 1.0)  # Lambda (GAE parameter) typically close to 1
             gamma = random.uniform(0.95, 0.99)  # Discount factor
-            timesteps = random.randint(300, 500)
-            #timesteps = random.randint(1000, 5000)  # Number of timesteps per update
+            # timesteps = random.randint(300, 500)
+            timesteps = random.randint(1000, 5000)  # Number of timesteps per update
             actor_lr = random.uniform(1e-5, 1e-3)  # Learning rate for actor
             critic_lr = random.uniform(1e-5, 1e-3)  # Learning rate for critic
             
