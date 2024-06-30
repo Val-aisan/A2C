@@ -112,6 +112,10 @@ class WebSocket:
             #self.score1 = score1
             r_1 = 1
             r_2 = -1
+        if ball_x >= 620.0 and ball_y <= paddle2_y + 70.0 and ball_y >= paddle2_y:
+            r_2 = 0.5
+        if ball_x <= 20.0  and ball_y <= paddle1_y + 70.0 and ball_y >= paddle1_y:
+            r_1 = 0.5
         done = game_over
         self.reward1 = r_1
         self.reward2 = r_2
