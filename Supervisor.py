@@ -66,10 +66,10 @@ class Supervisor:
         filename = f"./plots/{matter}_{hyperparameters_str}.png"
         
         # Extract losses from result
-        print(f"Size before{len(dt)}")
+        #print(f"Size before{len(dt)}")
         p1_data = [data['p1_actor'] for data in dt]
         p2_data = [data['p2_actor'] for data in dt]
-        print(f"Size after{len(p1_data)}")
+        #print(f"Size after{len(p1_data)}")
         # Plot the learning curve for p1_actor
         plt.figure(figsize=(10, 6))
         sns.lineplot(x=range(self.epochs), y=p1_data, label='p1_actor')

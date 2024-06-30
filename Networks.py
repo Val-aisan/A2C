@@ -20,7 +20,6 @@ class Actor(nn.Module):
             nn.Linear(64, 64),
             nn.ReLU(),
             nn.Linear(64, 3),
-            #nn.Softmax(dim=1),
         )
         self.opt = torch.optim.Adam(self.model.parameters(), lr=lr)
         self.init_weights()
@@ -33,18 +32,13 @@ class Actor(nn.Module):
 
     def policy(self, s_t):
         s_t = torch.as_tensor(s_t, dtype=torch.float)
-        #print(f"States: {s_t}")
         probs = self.model(s_t)
-        #print(f"Probs: {probs}")
         dist = distributions.Categorical(logits=probs)
         return dist
 
     def act(self, s_t):
         with torch.no_grad():
-            #print(f"State sent: {s_t}")
             probs = self.policy(s_t)
-            #print(f"Probs: {probs}")
-            #dist = distributions.Categorical(logits=probs)
             a_t = probs.sample()
         return a_t
     
@@ -68,13 +62,8 @@ class Actor(nn.Module):
     def learn(self, states, actions, advantages):
             actions = torch.tensor(actions, dtype=torch.int64)
             advantages = torch.tensor(advantages)
-            #actions.unsqueeze(1)
-
-            #log_prob = torch.log(self.forward(states))
-            #log_prob = log_prob.squeeze()
             actions = actions.unsqueeze(1)
-            #print(f"Size{log_prob.size()}, {actions.size()}")
-            #selected_log_prob = log_prob.gather(1, actions).squeeze(1)
+
             selected_log_prob = self.policy(states[:-1]).log_prob(actions)
             loss = torch.mean(-selected_log_prob * advantages)
             
