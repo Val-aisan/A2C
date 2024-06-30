@@ -26,8 +26,10 @@ class WebSocket:
             self.ws = None
 
     async def start_new_game(self):
-        await self.ws.send(json.dumps({"t":"select_game_type","game_type":"local_1v1","username":"dd"}))
+        await self.ws.send(json.dumps({"t":"select_game_type","game_type":"solo","username":"dd"}))
         await self.ws.send(json.dumps({"t": "sg"}))
+        while(self.state == None):
+            await asyncio.sleep(1)
 
     async def receive_data(self):
        while self.ws is not None:
@@ -41,10 +43,13 @@ class WebSocket:
                 logger.error(f"WebSocket connection is closed: {e}")
                 await self.create_connection()
             except Exception as e:
-                logger.error(f"Error receiving data: {e}")
+                logger.error(f"Error receiving data: {result}")
             
     async def restart_game(self):
+        self.state = None
         await self.ws.send(json.dumps({"t": "sg"}))
+        while(self.state == None):
+            await asyncio.sleep(1)
         #await self.ws.send(json.dumps({"t": "restart_game"}))
         
     async def send_action(self, action_p1, action_p2):

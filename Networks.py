@@ -15,15 +15,11 @@ class Actor(nn.Module):
     def __init__(self, lr):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Linear(6, 128),
+            nn.Linear(6, 64),
             nn.ReLU(),
-            nn.Linear(128, 128),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU(),
-            nn.Linear(128, 3),
+            nn.Linear(64, 3),
             #nn.Softmax(dim=1),
         )
         self.opt = torch.optim.Adam(self.model.parameters(), lr=lr)
@@ -52,13 +48,22 @@ class Actor(nn.Module):
             a_t = probs.sample()
         return a_t
     
-    def compute_loss(self, states, actions, advantages):
+    def compute_loss(self, states, actions, advantages, entropy_coef=0.01):
         actions = torch.tensor(actions, dtype=torch.int64)
         advantages = torch.tensor(advantages)
         actions = actions.unsqueeze(1)
-        selected_log_prob = self.policy(states[:-1]).log_prob(actions)
-        loss = torch.mean(-selected_log_prob * advantages)
-        return loss
+        
+        policy = self.policy(states[:-1])
+        selected_log_prob = policy.log_prob(actions)
+        
+        # Calculate entropy
+        entropy = policy.entropy().mean()
+        
+        # Compute loss with entropy term
+        policy_loss = torch.mean(-selected_log_prob * advantages)
+        total_loss = policy_loss - entropy_coef * entropy
+
+        return total_loss, entropy
 
     def learn(self, states, actions, advantages):
             actions = torch.tensor(actions, dtype=torch.int64)
@@ -84,15 +89,11 @@ class Critic(nn.Module):
     def __init__(self, lr):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Linear(6, 128),
+            nn.Linear(6, 64),
             nn.ReLU(),
-            nn.Linear(128, 128),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU(),
-            nn.Linear(128, 128),
-            nn.ReLU(),
-            nn.Linear(128, 1),
+            nn.Linear(64, 1),
 
         )
         self.opt = torch.optim.Adam(self.model.parameters(), lr=lr)

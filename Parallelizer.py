@@ -15,6 +15,8 @@ class Parallelizer:
         self.actor_lr = actor_lr
         self.critic_lr = critic_lr
         self.losses = []
+        self.rewards = []
+        self.entropy = []
         self.epochs = epochs
         self.create_games()
 
@@ -22,12 +24,13 @@ class Parallelizer:
         for _ in range(self.num_parallel_envs):
            self.games.append(Game(self.lam, self.gamma, self.timesteps, self.p1_actor, self.p2_actor, self.critic_lr))
 
-    def aggregate_losses(self, losses_list):
-        return torch.mean(torch.stack(losses_list))
+    def aggregate_data(self, data):
+        return torch.mean(torch.stack(data))
 
     def update_network(self, network, aggregated_loss):
         network.opt.zero_grad()
         aggregated_loss.backward()
+        torch.nn.utils.clip_grad_norm_(network.parameters(), max_norm=1.0) 
         network.opt.step()
 
     async def close(self):
@@ -38,18 +41,31 @@ class Parallelizer:
         for _ in range(self.epochs):
             p1_actor_losses = []
             p2_actor_losses = []
+            p1_actor_rewards = []
+            p2_actor_rewards = []
+            p1_entropy = []
+            p2_entropy = []
             print(f"Epoch: {_}")
             results = await asyncio.gather(*(game.run_A2C() for game in self.games))
 
-            print(f"Results: {results}")
+            #result size should be num_envs_par * 6
             for result in results:
                 print(f"Result: {result}")
                 p1_actor_losses.append(result[0])
                 p2_actor_losses.append(result[1])
+                p1_actor_rewards.append(result[2])
+                p2_actor_rewards.append(result[3])
+                p1_entropy.append(result[4])
+                p2_entropy.append(result[5])
+
 
             # Aggregate losses
-            agg_p1_actor_loss = self.aggregate_losses(p1_actor_losses)
-            agg_p2_actor_loss = self.aggregate_losses(p2_actor_losses)
+            agg_p1_actor_loss = self.aggregate_data(p1_actor_losses)
+            agg_p2_actor_loss = self.aggregate_data(p2_actor_losses)
+            agg_p1_actor_reward = self.aggregate_data(p1_actor_rewards)
+            agg_p2_actor_reward = self.aggregate_data(p2_actor_rewards)
+            agg_p1_actor_ent = self.aggregate_data(p1_entropy)
+            agg_p2_actor_ent = self.aggregate_data(p2_entropy)
 
             # Compute and apply gradients
             self.update_network(self.p1_actor, agg_p1_actor_loss)
@@ -60,8 +76,21 @@ class Parallelizer:
                 'p2_actor': agg_p2_actor_loss.item(),
             }
             self.losses.append(losses)
+
+            rewards = {
+                'p1_actor': agg_p1_actor_reward.item(),
+                'p2_actor': agg_p2_actor_reward.item(),
+            }
+            self.rewards.append(rewards)
+
+            entropy = {
+                'p1_actor': agg_p1_actor_ent.item(),
+                'p2_actor': agg_p2_actor_ent.item(),
+            }
+            self.entropy.append(entropy)
         self.store_model()
-        return self.losses
+        #print(f"SIZZ: loss{len(self.losses)} rewards: {len(self.rewards)}, entrop {len(self.entropy)}")
+        return self.losses, self.rewards, self.entropy
 
     def store_model(self):
         hyperparameters_str = f"envs_{self.num_parallel_envs}_lam_{self.lam}_gamma_{self.gamma}_t_{self.timesteps}_a_lr_{self.actor_lr}_c_lr_{self.critic_lr}"

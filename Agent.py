@@ -64,6 +64,6 @@ class Agent:
         # magnitudes of the gradients stay within a certain range so that policy steps are always similar size
         advantages = (advantages - advantages.mean())/advantages.std()
         #self.states[:-1]
-        pi_loss = self.actor.compute_loss(torch.FloatTensor(self.states), self.actions, advantages)
-        return pi_loss
+        pi_loss, entropy = self.actor.compute_loss(torch.FloatTensor(self.states), self.actions, advantages)
+        return pi_loss, entropy
 
