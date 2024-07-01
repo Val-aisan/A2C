@@ -42,7 +42,7 @@ class Actor(nn.Module):
             a_t = probs.sample()
         return a_t
     
-    def compute_loss(self, states, actions, advantages, entropy_coef=0.01):
+    def compute_loss(self, states, actions, advantages, entropy_coef=0.1):
         actions = torch.tensor(actions, dtype=torch.int64)
         advantages = torch.tensor(advantages)
         actions = actions.unsqueeze(1)
@@ -60,18 +60,11 @@ class Actor(nn.Module):
         return total_loss, entropy
 
     def learn(self, states, actions, advantages):
-            actions = torch.tensor(actions, dtype=torch.int64)
-            advantages = torch.tensor(advantages)
-            actions = actions.unsqueeze(1)
-
-            selected_log_prob = self.policy(states[:-1]).log_prob(actions)
-            loss = torch.mean(-selected_log_prob * advantages)
-            
-            self.opt.zero_grad()
-            loss.backward()
-            self.opt.step()
-
-            return loss
+        self.opt.zero_grad()
+        loss, entropy = self.compute_loss(states, actions, advantages)
+        loss.backward()
+        self.opt.step()
+        return loss
 
 
 class Critic(nn.Module):
@@ -83,7 +76,6 @@ class Critic(nn.Module):
             nn.Linear(64, 64),
             nn.ReLU(),
             nn.Linear(64, 1),
-
         )
         self.opt = torch.optim.Adam(self.model.parameters(), lr=lr)
         self.init_weights()

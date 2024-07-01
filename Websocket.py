@@ -14,6 +14,8 @@ class WebSocket:
         self.reward2 = 0
         self.score1 = 0
         self.score2 = 0
+        self.blocked1 = 0
+        self.blocked2 = 0
         self.state = None
 
     async def create_connection(self):
@@ -42,8 +44,8 @@ class WebSocket:
             except websockets.ConnectionClosed as e:
                 logger.error(f"WebSocket connection is closed: {e}")
                 await self.create_connection()
-            except Exception as e:
-                logger.error(f"Error receiving data: {result}")
+            #except Exception as e:
+            #    logger.error(f"Error receiving data: {result}")
             
     async def restart_game(self):
         self.state = None
@@ -102,27 +104,49 @@ class WebSocket:
         #print(f" SElf score 1: {self.score1}, score 2: {self.score2}")
         #print(f" SElf r_1: {self.reward1}, r_2: {self.reward2}")
         if score2 > self.score2:
-            #print(f"PLayer 2 got a point")
+            print(f"PLayer 2 got a point")
             #self.score2 = score2
-            r_1 = -1
-            r_2 = 1
+            r_1 = -2
+            r_2 = 2
         if score1 > self.score1:
             #print(f"update score1")
-            #print(f"PLayer 1 got a point")
+            print(f"PLayer 1 got a point")
             #self.score1 = score1
-            r_1 = 1
-            r_2 = -1
+            r_1 = 2
+            r_2 = -2
+        if score1 == 50:
+            print(f"PLayer 1 won")
+            r_1 = 10
+            r_2 = -10
+        if score2 == 50:
+            print(f"PLayer 2 won")
+            r_1 = -10
+            r_2 = 10
         if ball_x >= 620.0 and ball_y <= paddle2_y + 70.0 and ball_y >= paddle2_y:
-            r_2 = 0.5
+            r_2 = 1
         if ball_x <= 20.0  and ball_y <= paddle1_y + 70.0 and ball_y >= paddle1_y:
-            r_1 = 0.5
+            r_1 = 1
+        if self.state != None and paddle1_y == self.state[0] * 290.0:
+            self.blocked1 += 1
+            if self.blocked1 > 1000:
+                print("player 1 Blocked")
+                r_1 -= 1
+                self.blocked1 = 0
+        if self.state != None and paddle2_y == self.state[1] * 290.0:
+            self.blocked2 += 1
+            if self.blocked2 > 1000:
+                print("player 2 Blocked")
+                r_2 -= -1
+                self.blocked2 = 0
         done = game_over
         self.reward1 = r_1
         self.reward2 = r_2
         self.score1 = score1
         self.score2 = score2
+        if r_1 == 2 or r_1 == -2:
+            return self.state
         self.done = done
-        return (paddle1_y / 290.0, paddle2_y / 290.0, ball_x /640.0, ball_y /360.0, ball_vx / 30.0, ball_vy / 30.0)
+        return (paddle1_y / 290.0, paddle2_y / 290.0, ball_x /640.0, ball_y /360.0, ball_vx / 15.0, ball_vy / 15.0)
     
 
     async def close_connection(self):

@@ -17,9 +17,9 @@ class Supervisor:
             # Define reasonable ranges for hyperparameters
             lam = random.uniform(0.9, 1.0)  # Lambda (GAE parameter) typically close to 1
             gamma = random.uniform(0.95, 0.99)  # Discount factor
-            timesteps = random.randint(2000, 4000)  # Number of timesteps per update
+            timesteps = random.randint(1500, 3000)  # Number of timesteps per update
             actor_lr = random.uniform(1e-5, 1e-3)  # Learning rate for actor
-            critic_lr = random.uniform(1e-4, 1e-2)  # Learning rate for critic
+            critic_lr = random.uniform(1e-5, 1e-3)  # Learning rate for critic
             
             # Store the hyperparameters in a dictionary
             hyperparams = {
@@ -44,7 +44,7 @@ class Supervisor:
            # await asyncio.gather(*(parallelizer.close() for parallelizer  in self.parallelizers))
             #print(f"Size loss: {len(parallel2[0])} rewards {len(parallel2[1])}, hyper: {len(parallel2[2])}")
             for i, result in enumerate(results):
-                print(f"i: {i}")
+                # print(f"i: {i}")
                 self.plot_data(result[0], "loss", i)
                 self.plot_data(result[1], "rewards", i)
                 self.plot_data(result[2], "entropy",  i)

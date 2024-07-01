@@ -17,6 +17,10 @@ class Agent:
         #print(f"Data: state, {self.states}")
         #print(f"Data before storing at timestep {t}:")
         #print(f"s_t: {s_t}, a_t: {a_t}, r_t: {r_t}, d_t: {d_t}")
+        if r_t == 1:
+            print(f"Player got a point, padel1: {s_t[0] * 290.0}, padel2: {s_t[1] * 290.0}, ball_x: {s_t[2] * 640.0}")
+        if r_t == 0.5:
+            print(f"Player touched ball, padel1: {s_t[0] * 290.0}, padel2: {s_t[1] * 290.0}, ball_x: {s_t[2] * 640.0}, ball_y: {s_t[3] * 360.0}")
         self.states[t] = s_t
         self.rewards[t] = r_t
         self.done[t] = d_t

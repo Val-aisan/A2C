@@ -1,4 +1,4 @@
 from Supervisor import *
 
-supervisor = Supervisor(300, 5, 5)
+supervisor = Supervisor(150, 2, 1)
 asyncio.run(supervisor.run_parallelizer())
