@@ -122,7 +122,7 @@ class WebSocket:
         self.score1 = score1
         self.score2 = score2
         self.done = done
-        return (paddle1_y / 290.0, paddle2_y / 290.0, ball_x /640.0, ball_y /360.0, ball_vx / 30.0, ball_vy / 30.0)
+        return (paddle1_y / 290.0, paddle2_y / 290.0, ball_x /640.0, ball_y /360.0, ball_vx / 15.0, ball_vy / 15.0)
     
 
     async def close_connection(self):

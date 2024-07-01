@@ -31,19 +31,19 @@ class Actor(nn.Module):
                 m.bias.data.fill_(0.01)
 
     def policy(self, s_t):
-        s_t = torch.as_tensor(s_t, dtype=torch.float)
+        s_t = torch.as_tensor(s_t, dtype=torch.float32)
         probs = self.model(s_t)
         dist = distributions.Categorical(logits=probs)
         return dist
 
     def act(self, s_t):
         with torch.no_grad():
-            probs = self.policy(s_t)
-            a_t = probs.sample()
+            dist = self.policy(s_t)
+            a_t = dist.sample()
         return a_t
     
     def compute_loss(self, states, actions, advantages, entropy_coef=0.01):
-        actions = torch.tensor(actions, dtype=torch.int64)
+        actions = torch.tensor(actions, dtype=torch.int32)
         advantages = torch.tensor(advantages)
         actions = actions.unsqueeze(1)
         
@@ -54,23 +54,18 @@ class Actor(nn.Module):
         entropy = policy.entropy().mean()
         
         # Compute loss with entropy term
-        policy_loss = torch.mean(-selected_log_prob * advantages)
+        policy_loss = -selected_log_prob * advantages
+        policy_loss = policy_loss.mean()
+
         total_loss = policy_loss - entropy_coef * entropy
 
         return total_loss, entropy
 
-    def learn(self, states, actions, advantages):
-            actions = torch.tensor(actions, dtype=torch.int64)
-            advantages = torch.tensor(advantages)
-            actions = actions.unsqueeze(1)
-
-            selected_log_prob = self.policy(states[:-1]).log_prob(actions)
-            loss = torch.mean(-selected_log_prob * advantages)
-            
+    def learn(self, states, actions, advantages, entropy_coef=0.01):
             self.opt.zero_grad()
+            loss, entropy = self.compute_loss(states, actions, advantages, entropy_coef)
             loss.backward()
             self.opt.step()
-
             return loss
 
 

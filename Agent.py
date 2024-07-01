@@ -13,10 +13,11 @@ class Agent:
         self.v_losses = []
         self.timesteps = timesteps
 
-    def store_t_data(self, s_t, r_t, d_t, t):
+    def store_t_data(self, s_t, r_t, d_t, a_t, t):
         #print(f"Data: state, {self.states}")
         #print(f"Data before storing at timestep {t}:")
         #print(f"s_t: {s_t}, a_t: {a_t}, r_t: {r_t}, d_t: {d_t}")
+        self.actions[t] = a_t
         self.states[t] = s_t
         self.rewards[t] = r_t
         self.done[t] = d_t
@@ -43,9 +44,6 @@ class Agent:
             self.v_losses.append(v_loss)
         #print(f"Vpred: {V_pred}")
         return V_pred
-
-    def store_action(self, a_t, t):
-        self.actions[t] = a_t
 
     def calculate_advantages(self, V_pred, lam, gamma):
         V_pred = V_pred.detach().numpy()
