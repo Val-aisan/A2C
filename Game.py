@@ -12,14 +12,15 @@ class Game:
         self.timesteps = timesteps
         self.state = None
         self.first = True
+        #self.ws = WebSocket("ws://localhost:8000/ws/pong/", "ws://localhost:8765")
         self.ws = WebSocket('ws://localhost:8000/ws/pong/')
 
     def compute_loss(self, player, s_t):
         player.states[self.timesteps] = s_t
-        returns_2 = player.calculate_returns(self.gamma)
-        v_pred_2 = player.update_critic(returns_2)
-        advantages_2 = player.calculate_advantages(v_pred_2, self.lam, self.gamma)
-        pi_loss = player.compute_loss(advantages_2)
+        returns = player.calculate_returns(self.gamma)
+        v_pred = player.update_critic(returns)
+        advantages = player.calculate_advantages(v_pred, self.lam, self.gamma)
+        pi_loss = player.compute_loss(advantages)
         return pi_loss
     
     def smart_ai(self, state):
@@ -38,13 +39,13 @@ class Game:
             await self.ws.start_new_game()
             self.state = self.ws.state
             print(f"state: {self.ws.state}")
-            d_t = 0
+            self.ws.done = 0
             self.first = False
-        if (self.ws.done == True):
+        if (self.ws.done == 1):
             print("new_game")
             await self.ws.restart_game()
             self.state = self.ws.state
-            self.ws.done = False
+            self.ws.done = 0
         last_update_time = time.time()
         for t in range(self.timesteps):
             a_t_1 = self.player1.actor.act(self.state)

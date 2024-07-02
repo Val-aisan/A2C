@@ -17,10 +17,10 @@ class Supervisor:
             # Define reasonable ranges for hyperparameters
             lam = random.uniform(0.9, 1.0)  # Lambda (GAE parameter) typically close to 1
             gamma = random.uniform(0.95, 0.99)  # Discount factor
-            timesteps = random.randint(1500, 3000)  # Number of timesteps per update
+            timesteps = random.randint(500, 550)  # Number of timesteps per update
             actor_lr = random.uniform(1e-5, 1e-3)  # Learning rate for actor
-            critic_lr = random.uniform(1e-5, 1e-3)  # Learning rate for critic
-            
+            critic_lr = random.uniform(1e-4, 1e-2)  # Learning rate for critic
+            print(f"Model {_}, lam: {lam}, gamma{gamma}, timesteps{timesteps}, actor_lr: {actor_lr}, critic_lr: {critic_lr}")
             # Store the hyperparameters in a dictionary
             hyperparams = {
                 'lam': lam,

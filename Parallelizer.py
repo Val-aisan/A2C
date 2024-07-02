@@ -50,7 +50,11 @@ class Parallelizer:
 
             #result size should be num_envs_par * 6
             for result in results:
+<<<<<<< HEAD
                 # print(f"Result: {result}")
+=======
+                #print(f"Result: {result}")
+>>>>>>> 2f82f731425a810329c9f99235e463fc287bd5a9
                 p1_actor_losses.append(result[0])
                 p2_actor_losses.append(result[1])
                 p1_actor_rewards.append(result[2])
